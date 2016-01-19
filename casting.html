@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<title>cg15 final Demo</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<link href="mycss.css" rel="stylesheet">
+		<link href="bootstrap.css" rel="stylesheet">
+	</head>
+	
+	<body>
+	
+	<div>
+		<div class="row">
+			<div class="col-md-7" id="title">
+				This is a Demo of cg15 final project
+			</div>
+			<div class="col-md-5" id="defaults">
+				<div  class="de" style="background-color:#2A2A2A;" id = "de1"></div>
+				<div  class="de" style="background-color:#213A5B;" id = "de2"></div>
+				<div  class="de" style="background-color:#234573;" id = "de3"></div>
+				<div  class="de" style="background-color:#234F83;" id = "de4"></div>
+				<div  class="de" style="background-color:#2D5A95;" id = "de5"></div>
+				<div  class="de" style="background-color:#3766A6;" id = "de6"></div>
+			</div>
+		</div>
+	</div>
+	<div id = "content"></div>
+	<div id = "control">
+		<div class="row">
+ 			<div class="col-md-9">
+ 				<div  id = "label">
+ 					CIELAB
+ 					<hr style="border : 1px dashed white; margin:5px;" />
+ 				</div>
+ 				<div id="slider">
+ 				L*
+ 				<input type="range"  min="0" max="100" step="1" value="17" class="slider" id="s1"/>
+ 				a*
+ 				<input type="range"  min="-127" step="1" max="127" value="0" class="slider" id="s2"/>
+ 				b*
+ 				<input type="range"  min="-127" step="1" max="127" value="0" class="slider" id="s3"/>
+ 				Shadow Strengh
+ 				<input type="range"  min="0" max="10" step="1" value="0" class="slider" id="s4"/>
+ 	
+ 				</div>
+ 				
+ 			</div>
+ 			<div class="col-md-1">
+ 				<div id="number">
+	 				<label class="num" id = "n1">0</label>
+	 				</br>
+	 				<label class="num" id = "n2">0</label>
+	 				</br>
+	 				<label class="num" id = "n3">0</label>
+	 				</br>
+	 				<label class="num" id = "n4">0</label>
+	 
+	 			</div>
+ 			</div>
+  			<div class="col-md-2" id="color"></div>
+		</div>
+	</div>
+	</body>
+	
+	
+	
+	<script src="three.min.js"></script>
+	<script src="OBJLoader.js"></script>
+	<script src="process.js"></script>
+	<script src="c0lor.js"></script>
+
+	<script>
+		var flag = 0,l_flag=1;
+		var cont = document.getElementById("content");
+		var renderer = new THREE.WebGLRenderer({
+			antialias: true
+		});
+		renderer.setSize(window.innerWidth, window.innerHeight*11/16);
+	
+	
+		renderer.shadowMapEnabled = true;
+		renderer.shadowMapType = THREE.PCFSoftShadowMap;
+	
+		var onRenderFcts = [];
+		var scene = new THREE.Scene();
+		var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.01, 1000);
+		camera.position.z = 25;
+		camera.position.y = 9;
+		camera.lookAt(scene.position)
+	
+		//////////////////////////////////////////////////////////////////////////////////
+		//		Comment								//
+		//////////////////////////////////////////////////////////////////////////////////
+		var ambient = new THREE.AmbientLight(0x000000);
+		scene.add(ambient);
+	
+		// var light	= new THREE.DirectionalLight( 0x4444cc, 2 );
+		// light.position.set( 1, -1, 1 ).normalize();
+		// scene.add( light );
+	
+		var spotLight = new THREE.SpotLight(0x999999);
+		spotLight.color.r = 1;
+		spotLight.color.g = 1;
+		spotLight.color.b = 1;
+		spotLight.target.position.set(0, 0, 0);
+		spotLight.shadowCameraNear = 0.01;
+		spotLight.castShadow = true;
+		spotLight.shadowDarkness = 0.5;
+		spotLight.shadowCameraVisible = true;
+		scene.add(spotLight);
+		onRenderFcts.push(function() {
+				// spotLight.position.x = camera.position.x-20;
+				// spotLight.position.y = camera.position.y+40;
+				// spotLight.position.z = camera.position.z-20;
+				// spotLight.target.position.set(0, 0, 0);
+				if(l_flag==1){
+					var angle = Date.now() / 500 * Math.PI;
+					spotLight.position.x = Math.cos(angle * 0.1) * 25;
+					// spotLight.position.y	= 10 + Math.sin(angle*0.5)*6;
+					spotLight.position.y = 10;
+					spotLight.position.z = Math.sin(angle * 0.1) * 25;
+				}
+			})
+			//////////////////////////////////////////////////////////////////////////////////
+			//		Comment								//
+			//////////////////////////////////////////////////////////////////////////////////
+		var manager = new THREE.LoadingManager();
+		manager.onProgress = function(item, loaded, total) {
+	
+			console.log(item, loaded, total);
+			cont.appendChild(renderer.domElement);
+	
+	
+		};
+	
+	
+		var onProgress = function(xhr) {
+			if (xhr.lengthComputable) {
+				var percentComplete = xhr.loaded / xhr.total * 100;
+				console.log(Math.round(percentComplete, 2) + '% downloaded');
+			}
+		};
+	
+		var onError = function(xhr) {};
+		var texture = THREE.ImageUtils.loadTexture("dg.jpg");
+		var blood;
+		var loader = new THREE.OBJLoader(manager);
+		loader.load('blood.obj', function(object) {
+	
+			object.traverse(function(child) {
+	
+				if (child instanceof THREE.Mesh) {
+					child.material.map = texture;
+					child.castShadow = true;
+					child.receiveShadow = true;
+	
+				}
+	
+			});
+			
+			// var material = new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture('grid.jpg')});
+   //         var mesh = new THREE.Mesh(object.geometry, material);
+			
+			blood = object;
+			var size = 1;
+			object.scale.x = size;
+			object.scale.y = size;
+			object.scale.z = size;
+			object.position.y = 3;
+			object.position.x = 0;
+			object.position.z = 0;
+			object.rotation.x = 0.5;
+			object.castShadow = true;
+			object.receiveShadow = true;
+			scene.add(object);
+	
+		}, onProgress, onError);
+	
+	
+	
+		//////////////////////////////////////////////////////////////////////////////////
+		//		Ground
+		//////////////////////////////////////////////////////////////////////////////////
+	
+		var geometry = new THREE.CubeGeometry(10, 0.1, 10);
+		var texture2 = THREE.ImageUtils.loadTexture('gray.jpg');
+		texture2.repeat.set(0.5, 0.8);
+		texture2.wrapS = texture2.wrapT = THREE.RepeatWrapping;
+		var material = new THREE.MeshPhongMaterial({
+			map: texture2
+		});
+		var ground = new THREE.Mesh(geometry, material);
+		ground.scale.multiplyScalar(3);
+		ground.position.y = -0.5 / 2;
+		scene.add(ground);
+	
+		ground.castShadow = false;
+		ground.receiveShadow = true;
+	
+	
+		//////////////////////////////////////////////////////////////////////////////////
+		//		Camera Controls							//
+		//////////////////////////////////////////////////////////////////////////////////
+		var mouse = {
+			x: 0,
+			y: 0
+		}
+		document.addEventListener('mousemove', function(event) {
+			mouse.x = (event.clientX / window.innerWidth) - 0.5
+			mouse.y = (event.clientY / window.innerHeight) - 0.5
+		}, false)
+		 onRenderFcts.push(function(delta, now) {
+		 	if(flag==1){
+		 		camera.position.x += (mouse.x * 80 - camera.position.x) * (delta * 3)
+		 	}
+		 	// camera.position.y += (mouse.y * 10 - camera.position.y + 4) * (delta * 3)
+		 	// 	// limit camera position to avoid showing shadow on backface
+		 	// camera.position.y = Math.max(camera.position.y, 3);
+	
+		 	camera.lookAt(scene.position)
+		 })
+	
+	
+		//////////////////////////////////////////////////////////////////////////////////
+		//		render the scene						//
+		//////////////////////////////////////////////////////////////////////////////////
+		onRenderFcts.push(function() {
+			renderer.render(scene, camera);
+		})
+	
+		//////////////////////////////////////////////////////////////////////////////////
+		//		loop runner							//
+		//////////////////////////////////////////////////////////////////////////////////
+		var lastTimeMsec = null
+		requestAnimationFrame(function animate(nowMsec) {
+			// keep looping
+			requestAnimationFrame(animate);
+			// measure time
+			lastTimeMsec = lastTimeMsec || nowMsec - 1000 / 60
+			var deltaMsec = Math.min(200, nowMsec - lastTimeMsec)
+			lastTimeMsec = nowMsec
+				// call each update function
+			onRenderFcts.forEach(function(onRenderFct) {
+				onRenderFct(deltaMsec / 1000, nowMsec / 1000)
+			})
+		})
+	</script>
+
+
+</html>
